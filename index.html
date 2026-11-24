@@ -85,12 +85,49 @@ td:first-child{font-weight:700;background:#f5f5f5}
 @keyframes slide{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
+.mflow,.mnav,.short{display:none}
+.sheetx{float:right;margin:0 0 8px 12px}
+@keyframes mdash{from{background-position:0 0}to{background-position:0 9px}}
+
+/* Phones: the wide canvas is replaced by a vertical flow of large cards; details open as a bottom sheet. */
 @media (max-width:860px){
-  body{overflow:auto}
-  .work{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto}
-  .panel{border-right:0;border-bottom:1px solid var(--rule);order:2}
-  .canvas{order:1;height:62vh}
-  .bar{flex-wrap:wrap}.bar h1{display:none}
+  html,body{height:auto}
+  body{display:block;overflow:auto;font-size:16px}
+  .bar{position:sticky;top:0;z-index:20;flex-wrap:wrap;gap:8px;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top,0px))}
+  .bar h1,#prev,#next,.full{display:none}
+  .short{display:inline}
+  .tool,.lang button{padding:10px 13px;font-size:15px}
+  .lang{margin-left:auto}
+  .work{display:block}
+  .canvas{padding:14px 14px 48px;background:var(--ui)}
+  .canvas svg{display:none}
+  .mflow{display:flex;flex-direction:column;align-items:stretch}
+  .mlane{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:#e6eaee;border-radius:6px;padding:7px 10px;text-align:center}
+  .mlane + .marrow{height:12px}
+  .mrow{display:flex;gap:10px}
+  .mcard{flex:1 1 0;min-width:0;min-height:62px;border:2px solid;border-radius:10px;padding:10px 10px;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;text-align:center;font-weight:700;font-size:15.5px;line-height:1.2;color:#1f2328;scroll-margin-top:120px;animation:pop .4s ease both}
+  .mcard small{font-weight:400;font-size:12.5px}
+  .mcard.ell{border-radius:999px}
+  .mcard.dia{border-style:dashed;border-width:2.5px}
+  .mcard.on{border-color:var(--hot);border-style:solid;box-shadow:0 0 0 4px rgba(230,0,122,.22)}
+  .mdot{position:absolute;top:-7px;right:-5px;width:15px;height:15px;border-radius:50%;border:2px solid #fff}
+  .marrow{align-self:center;width:2px;height:22px;margin:3px 0 10px;position:relative;background:repeating-linear-gradient(var(--edge) 0 5px,transparent 5px 9px);animation:mdash .6s linear infinite}
+  .marrow::after{content:"";position:absolute;left:-5px;bottom:-8px;border:6px solid transparent;border-top:8px solid var(--edge);border-bottom:0}
+  .panel{position:fixed;left:0;right:0;bottom:0;z-index:30;max-height:68vh;border-right:0;border-top:4px solid var(--hot);border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.28);transform:translateY(105%);transition:transform .3s ease;padding:12px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+  .panel.up{transform:none}
+  .panel h2{font-size:20px}
+  .mnav{display:flex;gap:8px;margin-left:auto}
+  .mnav button{min-width:46px;min-height:42px;border:1px solid var(--rule);background:var(--ui);border-radius:8px;font-weight:700;font-size:17px}
+  .mnav button:disabled{opacity:.35}
+  .sheet{position:fixed;inset:0;z-index:40;border:0;border-radius:0;padding:14px 14px calc(20px + env(safe-area-inset-bottom,0px));padding-top:max(14px,env(safe-area-inset-top,0px));background:#fff}
+  .sheet thead{display:none}
+  .sheet table,.sheet tbody,.sheet tr,.sheet td{display:block;width:100%}
+  .sheet tr{margin-bottom:12px;border:1px solid #9aa5b1;border-radius:8px;overflow:hidden}
+  .sheet td{border:0;border-bottom:1px solid #e3e7eb;font-size:15px}
+  .sheet td:last-child{border-bottom:0}
+  .sheet td::before{content:attr(data-l);display:block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .sheet td:first-child{background:#dae8fc;font-size:16px}
+  .sheet td:first-child::before{display:none}
 }
 </style>
 </head>
@@ -102,9 +139,9 @@ td:first-child{font-weight:700;background:#f5f5f5}
   <button type="button" class="tool" id="play" aria-pressed="false"></button>
   <button type="button" class="tool" id="next" aria-label="next">→</button>
   <div class="lang" role="group" aria-label="Language">
-    <button type="button" data-lang="en">English</button>
-    <button type="button" data-lang="kk">Қазақша</button>
-    <button type="button" data-lang="tr">Türkçe</button>
+    <button type="button" data-lang="en"><span class="full">English</span><span class="short">EN</span></button>
+    <button type="button" data-lang="kk"><span class="full">Қазақша</span><span class="short">ҚАЗ</span></button>
+    <button type="button" data-lang="tr"><span class="full">Türkçe</span><span class="short">TR</span></button>
   </div>
 </div>
 <div class="work">
@@ -120,6 +157,7 @@ td:first-child{font-weight:700;background:#f5f5f5}
       <rect width="1280" height="720" fill="url(#g50)"/>
       <g id="lanes"></g><g id="edges"></g><g id="nodes"></g><g id="legend"></g>
     </svg>
+    <div class="mflow" id="mflow"></div>
     <div class="sheet" id="sheet" hidden></div>
   </main>
 </div>
@@ -411,7 +449,12 @@ const E = [
  ["result","defense","M1185,340V450"]
 ];
 
-let lang = "en", cur = "problem", timer = null, sheetOpen = false;
+// Phone layout: the same blocks as a vertical list (a number = swim-lane header, an array = one row of cards).
+const MROWS = [0,["problem"],["aim"],["theory"],1,["s1","s2"],2,["model","platform"],["pilot"],["ready"],3,["pre"],["exp","ctrl"],["post"],["cmp"],4,["result"],["defense"]];
+const phone = () => matchMedia("(max-width:860px)").matches;
+const calm = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let lang = "en", cur = "problem", timer = null, sheetOpen = false, panelUp = false;
 try { const v = localStorage.getItem("rd-lang3"); if (UI[v]) lang = v; } catch (e) {}
 const $ = id => document.getElementById(id);
 function h(tag, cls, text){ const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
@@ -460,7 +503,9 @@ function renderSheet(){
   const tbl = h("table"), thead = h("thead"), tr = h("tr"), tb = h("tbody");
   u.th.forEach(t => tr.append(h("th", "", t))); thead.append(tr);
   TABLE[lang].forEach((row, i) => { const r = h("tr"); r.style.animationDelay = (i * 70) + "ms"; row.forEach(c => r.append(h("td", "", c))); tb.append(r); });
-  tbl.append(thead, tb); sh.replaceChildren(h("h2", "", u.sheetT), h("p", "", u.sheetP), tbl);
+  tb.querySelectorAll("tr").forEach(r => [...r.children].forEach((td, j) => td.dataset.l = u.th[j]));
+  const x = h("button", "tool sheetx", "✕"); x.type = "button"; x.addEventListener("click", () => { sheetOpen = false; render(); });
+  tbl.append(thead, tb); sh.replaceChildren(x, h("h2", "", u.sheetT), h("p", "", u.sheetP), tbl);
 }
 
 function render(){
@@ -486,17 +531,46 @@ function render(){
   const n = N[cur], d = n[lang], card = h("div", "card"), tag = h("div", "tag"), sw = h("span", "swatch"), chips = h("div", "chips");
   sw.style.background = C[n.c][0]; sw.style.borderColor = C[n.c][1];
   tag.append(sw, document.createTextNode((i + 1) + " / " + ORDER.length));
+  const mnav = h("div", "mnav"), bp = h("button", "", "←"), bn = h("button", "", "→"), bx = h("button", "", "✕");
+  bp.type = bn.type = bx.type = "button"; bp.disabled = i === 0; bn.disabled = i === ORDER.length - 1;
+  bp.addEventListener("click", () => { stop(); step(-1); }); bn.addEventListener("click", () => { stop(); step(1); });
+  bx.addEventListener("click", () => { stop(); panelUp = false; render(); });
+  mnav.append(bp, bn, bx); tag.append(mnav);
   chips.append(h("span", "chip", n.when), h("span", "chip " + n.st, u[n.st]));
   card.append(tag, h("h2", "", d.t), chips, h("p", "lead", d.lead));
   SECTIONS.forEach(k => { if (d[k]) card.append(section(u[k], d[k], k === "tools")); });
   if (n.link) { const a = h("a", "", SITE); a.href = SITE; a.target = "_blank"; a.rel = "noopener"; const p = h("p"); p.append(a); card.append(p); }
   if (d.note) card.append(h("p", "note", d.note));
-  $("panel").replaceChildren(card); $("panel").scrollTop = 0;
+  $("panel").replaceChildren(card); $("panel").scrollTop = 0; $("panel").classList.toggle("up", panelUp);
+
+  const mf = $("mflow"); mf.replaceChildren();
+  MROWS.forEach((row, r) => {
+    if (r) mf.append(h("div", "marrow"));
+    if (typeof row === "number") { mf.append(h("div", "mlane", u.lanes[row])); return; }
+    const line = h("div", "mrow");
+    row.forEach(id => {
+      const m = N[id], md = m[lang], b = h("button", "mcard " + m.s + (id === cur && panelUp ? " on" : "")), dot = h("span", "mdot");
+      b.type = "button"; b.id = "m-" + id; b.style.background = C[m.c][0]; b.style.borderColor = id === cur && panelUp ? "" : C[m.c][1];
+      dot.style.background = STATUS[m.st];
+      b.append(document.createTextNode((m.s === "dia" ? "◆ " : "") + md.t));
+      const sub = m.s === "dia" ? u.yes + " ↓   ·   " + u.no + " ↺" : (md.sub || m.sub); if (sub) b.append(h("small", "", sub));
+      b.append(dot); b.addEventListener("click", () => { stop(); select(id); });
+      line.append(b);
+    });
+    mf.append(line);
+  });
   renderSheet();
 }
 
-function select(id){ cur = id; sheetOpen = false; render(); }
-function step(k){ select(ORDER[Math.max(0, Math.min(ORDER.length - 1, ORDER.indexOf(cur) + k))]); }
+function select(id){
+  const again = id === cur && panelUp && phone();   // tapping the open card again closes the sheet
+  cur = id; sheetOpen = false; panelUp = !again; render();
+  if (phone() && panelUp) $("m-" + id).scrollIntoView({ block:"start", behavior: calm() ? "auto" : "smooth" });
+}
+function step(k){
+  const id = ORDER[Math.max(0, Math.min(ORDER.length - 1, ORDER.indexOf(cur) + k))];
+  if (id !== cur || !panelUp) { panelUp = false; select(id); }
+}
 function stop(){ if (timer) { clearInterval(timer); timer = null; render(); } }
 $("prev").addEventListener("click", () => { stop(); step(-1); });
 $("next").addEventListener("click", () => { stop(); step(1); });
